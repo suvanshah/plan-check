@@ -1,0 +1,7 @@
+data/raw/
+downloads/
+.env
+.env.*
+!.env.example
+.DS_Store
+.openai/
