@@ -1,5 +1,7 @@
 # Plan Check
 
+[Live research workspace](https://plan-check-london.yummybuttercup2.chatgpt.site/) · [Original 3D explorer](https://plan-check-london.yummybuttercup2.chatgpt.site/model/)
+
 An interactive research workspace about converting existing three-storey London houses into self-contained flats. One sidebar sheet is visible at a time. Filters persist between sheets; changing data release resets filters.
 
 Run `python3 -m http.server 8095 --bind 127.0.0.1 --directory dist`.
@@ -28,7 +30,7 @@ Outcome status and wording can disagree. Waltham Forest has 15 approval-wording/
 
 ## Other assets and interpretation
 
-`dist/boroughs.json`: 33 borough SVG shapes from https://github.com/house-london/0-stalledlondon/blob/main/public/data/london-boroughs.json . Explicit authority aliases; OPDC is not assigned to polygons. Boundary vintage is not established. The building animation is conceptual geometry, not a survey, compliance model or digital twin.
+`dist/boroughs.json`: 33 borough SVG shapes from https://github.com/house-london/0-stalledlondon/blob/main/public/data/london-boroughs.json . Explicit authority aliases; OPDC is not assigned to polygons. Boundary vintage is not established. The independent Sky Fragment source model does not establish conversion feasibility or compliance.
 
 Refused share = Rejected/(Permitted+Rejected), excluding all other outcomes. Map/ranking shares are suppressed below 20 P/R records. Timings require both recorded dates and a finite non-negative interval; they are not statutory breach assessments. Applications and permissions do not prove delivered homes. Neither release contains plan-verified three-storey conversions.
 
@@ -46,12 +48,12 @@ Rankings, excerpts, reason lists and tables use Previous/Next controls sized to 
 
 Browser fit checks: all main sheets at 1280×720 and 390×667 have canvas scrollHeight equal to clientHeight. Secondary tabs checked at 390×667, including corrected size bands, record verification, comparison cards and a warning pair (P0826). Foundations map and release inventory fit; the Files subview no longer carries the supplied manifest into the Foundations release. Filter dialog, previous/next paging, full-text opening and closing, evidence-to-record navigation and data-release separation checked. No source data or statistics changed in this interface update.
 
-## Sky Fragment model replacement
+## Yomara’s original Sky Fragment explorer
 
-The earlier one-house/three-flat illustration is replaced with the supplied Sky Fragment model (`dist/sky-fragment.json`; original file `model.json`, source named `SkyFragmentfinaldigitaltwin.3dm`). SHA-256: 37be1d892a57404b7e7e3e13d09d5c9d6f25250234ba66d92503547720392b12. The original JSON is copied unchanged. The independent model is never joined to planning applications or counted as a verified conversion.
+The Building model sheet now embeds Yomara’s original BIMPLANING viewer from `BIMPLANING.zip`, with the detailed building shell and all 20 GLB levels. Standalone English: `dist/model/index.html`; Spanish: `dist/model/es/index.html`. Exterior orbit and hotspots, facade-by-use, stacked uses, individual levels, 3D / plan cuts and element details come from the supplied viewer. It loads on the first model-sheet visit.
 
-`building.js` renders actual supplied floor/core/zone polygons in a selectable axonometric stack or level plan. Floors can be separated and rotated; uses highlighted; level/space markers selected. The detailed GLB shell/level files are not supplied, so this is a procedural polygon rendering, not the original detailed mesh. Length and area units are undeclared; no metric-unit labels are assigned. The twenty level entries include mezzanine and roof, and eighty space entries are not a dwelling count.
+The original HTML and README are preserved under `sources/yomara/`, with SHA-256 and byte manifests for every supplied file. Model regeneration scripts are under `model-tools/`; the Rhino source file is not included. Served pages adapt panel density when embedded and use vendored Three.js 0.183.0 modules (license included), avoiding runtime CDN dependencies. System fonts replace remote web fonts.
 
-Evidence gaps → Space now has an evidence-check selector for storeys, floor area, proposed layout, daylight and self-contained homes. Model geometry partially fills storey/layout information and reports floor-plate areas. Existing/proposed phases, surveyed status, units/conventions, a London site/application link, daylight results and explicit dwelling schedules remain missing. The model does not establish feasibility or compliance, and no verified-only filters are unlocked. Model view disables the unrelated global planning filters.
+The source README declares metres and square metres. These are author-declared model units, not a survey validation. The 20 level entries include mezzanine and roof; space markers are not a verified self-contained dwelling count. No London planning application identity, existing/proposed conversion comparison or daylight assessment is supplied. The planning records and statistics remain unchanged; no case is promoted to plan-verified.
 
-Independent checks: all twenty floor-plate polygon areas agree with reported values within 0.06 source area units (rounding); reported plate sum is 3,693.1. Ground-floor plate 190.3, core 40.5 and selected Café space area 64.6 match the file. The viewer renders twenty selectable levels. Building/plan mode, level selection, use highlight, rotation, exploded spacing, space selection, source-details dialog and evidence link were checked. Both model modes and all five evidence checks fit the 390×667 canvas without vertical overflow. Other application data remains unchanged.
+The earlier polygon-only `dist/sky-fragment.json` remains for traceability but is no longer the rendered model. The source archive is retained locally outside the repository; unmodified original pages and a file manifest allow the viewer adaptations to be reviewed.

@@ -1,0 +1,1236 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}body{margin:0;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Explorador Sky Fragment</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: directorio de vestíbulo a la izquierda, modelo al centro, ficha técnica que entra por la derecha;
+   selector de vistas abajo, como en la referencia. Paleta tomada de los materiales del modelo (Night, Deep Teal, Aqua). */
+:root {
+  --night: #222933;
+  --night-ink: #f2f5f6;
+  --bg: #eef2f3;
+  --panel: #fbfcfc;
+  --panel-2: #f2f5f6;
+  --ink: #141a21;
+  --ink-2: #47525d;
+  --ink-3: #6f7b86;
+  --line: #dbe2e5;
+  --line-2: #c5cfd4;
+  --accent: #2b6675;
+  --accent-soft: #dcebee;
+  --sky-1: #d6e7ed;
+  --sky-2: #f5f8f8;
+  --use-comercio: #eb6834;
+  --use-oficinas: #2a78d6;
+  --use-vivienda: #1baf7a;
+  --use-nucleo: #8d959c;
+  --on-fill: #ffffff;
+  --shadow: 0 10px 30px rgba(20, 30, 40, .14), 0 2px 6px rgba(20, 30, 40, .08);
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --side-w: 320px;
+  --drawer-w: 400px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --night: #0b0f13; --night-ink: #e9eef1;
+    --bg: #0f1418; --panel: #161c22; --panel-2: #1c242b;
+    --ink: #eef2f4; --ink-2: #b7c1c8; --ink-3: #8a96a0;
+    --line: #26303a; --line-2: #34414c;
+    --accent: #6fb7c8; --accent-soft: #1d3138;
+    --sky-1: #1a2732; --sky-2: #0f151a;
+    --use-comercio: #d95926; --use-oficinas: #3987e5; --use-vivienda: #199e70; --use-nucleo: #6f7880;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --night: #0b0f13; --night-ink: #e9eef1;
+  --bg: #0f1418; --panel: #161c22; --panel-2: #1c242b;
+  --ink: #eef2f4; --ink-2: #b7c1c8; --ink-3: #8a96a0;
+  --line: #26303a; --line-2: #34414c;
+  --accent: #6fb7c8; --accent-soft: #1d3138;
+  --sky-1: #1a2732; --sky-2: #0f151a;
+  --use-comercio: #d95926; --use-oficinas: #3987e5; --use-vivienda: #199e70; --use-nucleo: #6f7880;
+  --shadow: 0 10px 30px rgba(0, 0, 0, .45), 0 2px 6px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; overflow: hidden; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--night); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); grid-template-columns: var(--side-w) minmax(0, 1fr); grid-template-areas: "top top" "side stage"; }
+
+/* ---------- barra superior */
+.topbar { grid-area: top; display: flex; align-items: center; gap: 12px; min-width: 0; background: var(--night); color: var(--night-ink);
+  padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 0 1 auto; }
+.brand svg { flex: none; }
+.brand-name { font-family: var(--font-display); font-weight: 600; font-size: 22px; letter-spacing: .01em; line-height: 1; white-space: nowrap; }
+.brand-sub { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; opacity: .72; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top-spacer { flex: 1; }
+.top-btn { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid rgba(255,255,255,.22); color: var(--night-ink);
+  border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; white-space: nowrap; }
+.top-btn:hover { background: rgba(255,255,255,.08); }
+.list-btn { display: none; }
+
+/* ---------- barra lateral (directorio) */
+.side { grid-area: side; background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; z-index: 3; padding-left: env(safe-area-inset-left, 0px); }
+.side-head { padding: 18px 18px 10px; display: grid; gap: 4px; }
+.side-title { font-family: var(--font-display); font-weight: 600; font-size: 28px; line-height: 1.05; margin: 0; text-wrap: balance; }
+.side-help { color: var(--ink-2); font-size: 14px; margin: 0; }
+.search { margin: 6px 16px 10px; position: relative; }
+.search input { width: 100%; box-sizing: border-box; border: 1px solid var(--line-2); background: var(--panel-2); color: var(--ink); border-radius: 999px; padding: 9px 14px 9px 38px; font: inherit; font-size: 14px; }
+.search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-3); pointer-events: none; }
+.side-list { flex: 1; overflow-y: auto; min-height: 0; padding: 0 8px 12px; }
+.side-foot { border-top: 1px solid var(--line); padding: 12px 16px 14px; display: grid; gap: 8px; }
+.foot-title { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin: 0; }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+.legend span { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); }
+.sw { width: 12px; height: 12px; border-radius: 3px; flex: none; background: var(--c); }
+
+/* elementos de lista */
+.item { width: 100%; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; text-align: left; background: transparent; border: 0;
+  border-bottom: 1px solid var(--line); padding: 10px 10px; cursor: pointer; border-radius: 0; }
+.item:hover, .item.is-active { background: var(--accent-soft); }
+.item .ic { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--panel-2); color: var(--accent); border: 1px solid var(--line); }
+.item .t { font-weight: 600; font-size: 15px; line-height: 1.2; }
+.item .s { font-size: 13px; color: var(--ink-3); }
+.item .go { color: var(--ink-3); }
+
+/* directorio de niveles */
+.lvl { width: 100%; display: grid; grid-template-columns: 50px 1fr auto; align-items: center; gap: 10px; background: transparent; border: 0; border-bottom: 1px solid var(--line);
+  padding: 7px 10px; text-align: left; cursor: pointer; }
+.lvl:hover { background: var(--panel-2); }
+.lvl.is-active { background: var(--accent-soft); }
+.code { font-family: var(--font-data); font-size: 12.5px; font-weight: 500; background: var(--night); color: var(--night-ink); border-radius: 6px; padding: 3px 0; text-align: center; letter-spacing: .02em; }
+.lvl .n { font-weight: 600; font-size: 14.5px; line-height: 1.15; }
+.lvl .u { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--ink-3); }
+.lvl .u i { width: 9px; height: 9px; border-radius: 2px; background: var(--c); display: inline-block; }
+.lvl .e { font-family: var(--font-data); font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.spaces { padding: 4px 10px 10px 70px; display: grid; gap: 2px; border-bottom: 1px solid var(--line); background: var(--accent-soft); }
+.sp { display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: baseline; background: transparent; border: 0; text-align: left; padding: 5px 4px; border-radius: 6px; cursor: pointer; font-size: 13.5px; }
+.sp:hover { background: var(--panel); }
+.sp i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); align-self: center; }
+.sp b { font-weight: 500; }
+.sp em { font-style: normal; font-family: var(--font-data); font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* resumen de usos */
+.usebar { display: flex; gap: 2px; height: 28px; margin: 4px 16px 8px; }
+.usebar div { background: var(--c); border-radius: 4px; color: var(--on-fill); font-size: 12.5px; font-weight: 600; display: flex; align-items: center; padding-left: 8px; overflow: hidden; white-space: nowrap; min-width: 0; }
+.usecards { display: grid; gap: 8px; padding: 4px 8px 12px; }
+.usecard { display: grid; grid-template-columns: 14px 1fr auto; gap: 4px 10px; align-items: baseline; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; cursor: pointer; }
+.usecard:hover, .usecard.is-active { border-color: var(--line-2); background: var(--panel-2); }
+.usecard .sw { align-self: center; }
+.usecard .t { font-weight: 600; font-size: 16px; }
+.usecard .a { font-family: var(--font-data); font-size: 13px; font-variant-numeric: tabular-nums; }
+.usecard .d { grid-column: 2 / 4; font-size: 13px; color: var(--ink-3); }
+.linkbtn { background: none; border: 0; color: var(--accent); font-weight: 600; cursor: pointer; padding: 6px 16px; text-align: left; font-size: 14px; }
+.note { font-size: 12.5px; color: var(--ink-3); margin: 0 16px 12px; }
+
+/* ---------- escenario */
+.stage { grid-area: stage; position: relative; overflow: hidden; background: linear-gradient(180deg, var(--sky-1), var(--sky-2) 70%); min-width: 0; }
+#c { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+.overlay { position: absolute; inset: 0; pointer-events: none; }
+.hs { position: absolute; left: 0; top: 0; width: 30px; height: 30px; margin: -15px 0 0 -15px; border: 0; background: transparent; padding: 0; cursor: pointer; pointer-events: auto; }
+.hs::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: var(--c, var(--accent)); box-shadow: 0 0 0 3px #fff, 0 2px 8px rgba(0,0,0,.3); transition: transform .15s; }
+.hs::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; border: 2px solid var(--c, var(--accent)); opacity: .0; animation: pulse 2.4s ease-out infinite; }
+.hs:hover::before, .hs:focus-visible::before, .hs.is-active::before { transform: scale(1.25); }
+.hs .tip { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); background: var(--panel); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow);
+  font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s; }
+.hs:hover .tip, .hs:focus-visible .tip, .hs.is-active .tip, .show-tips .hs.tag .tip { opacity: 1; }
+.show-tips .hs.tag .tip { font-weight: 500; font-size: 12px; padding: 2px 8px; box-shadow: none; }
+.show-tips .hs.tag.below .tip { bottom: auto; top: calc(100% + 4px); }
+.show-tips .hs.tag.notip:not(:hover):not(.is-active) .tip { opacity: 0; }
+.show-tips .hs.tag:hover .tip, .show-tips .hs.tag.is-active .tip { font-weight: 600; box-shadow: var(--shadow); }
+@keyframes pulse { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.6); opacity: 0; } }
+.uselabel { position: absolute; left: 0; top: 0; transform: translateY(-50%); display: grid; grid-template-columns: 12px auto; gap: 0 8px; align-items: center; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 7px 12px; box-shadow: var(--shadow); pointer-events: auto; cursor: pointer; white-space: nowrap; }
+.uselabel b { font-size: 15px; }
+.uselabel small { grid-column: 2; font-family: var(--font-data); font-size: 12px; color: var(--ink-3); }
+.chips { position: absolute; top: 14px; right: max(14px, env(safe-area-inset-right, 0px)); display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; max-width: calc(100% - 28px); }
+.chip { display: inline-flex; align-items: center; gap: 8px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font-size: 13.5px; cursor: pointer; box-shadow: var(--shadow); }
+.chip[aria-pressed="true"] { background: var(--night); color: var(--night-ink); border-color: var(--night); }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .5; }
+.chip[aria-pressed="true"] .dot { opacity: 1; background: var(--use-vivienda); }
+.seg { display: inline-flex; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 3px; box-shadow: var(--shadow); }
+.seg button { border: 0; background: transparent; border-radius: 999px; padding: 5px 12px; font-size: 13.5px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--night); color: var(--night-ink); }
+.levelbadge { position: absolute; top: 14px; left: max(14px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: auto auto; gap: 2px 12px; align-items: center; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 14px; padding: 10px 12px 10px 14px; box-shadow: var(--shadow); }
+.levelbadge .big { font-family: var(--font-display); font-weight: 700; font-size: 40px; line-height: .9; grid-row: 1 / 3; letter-spacing: .01em; }
+.levelbadge .nm { font-weight: 600; font-size: 15px; }
+.levelbadge .meta { font-size: 13px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+.levelbadge .meta i { width: 9px; height: 9px; border-radius: 2px; background: var(--c); display: inline-block; }
+.stepper { grid-column: 3; grid-row: 1 / 3; display: grid; gap: 4px; margin-left: 6px; }
+.stepper button { width: 34px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; display: grid; place-items: center; }
+.stepper button:disabled { opacity: .35; cursor: default; }
+.views { position: absolute; left: 50%; bottom: max(16px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 4px; box-shadow: var(--shadow); }
+.views button { display: inline-flex; align-items: center; gap: 8px; border: 0; background: transparent; border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 600; font-size: 14.5px; color: var(--ink-2); }
+.views button[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line-2); }
+.scalebar { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: max(22px, env(safe-area-inset-bottom, 0px)); font-family: var(--font-data); font-size: 11.5px; color: var(--ink-2); }
+.scalebar .bar { height: 6px; border: 1.5px solid var(--ink-2); border-top: 0; margin-bottom: 3px; background: linear-gradient(90deg, var(--ink-2) 50%, transparent 50%); }
+.scalebar .lbl { display: flex; justify-content: space-between; }
+.picktip { position: absolute; left: 0; top: 0; pointer-events: none; background: var(--night); color: var(--night-ink); font-size: 12.5px; padding: 4px 9px; border-radius: 6px; white-space: nowrap; transform: translate(12px, 12px); }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, var(--sky-1), var(--sky-2)); z-index: 5; }
+.loading-card { width: min(320px, calc(100% - 32px)); display: grid; gap: 10px; text-align: center; }
+.loading-card .big { font-family: var(--font-display); font-weight: 600; font-size: 34px; }
+.progress { height: 6px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.progress div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.loading-card p { margin: 0; color: var(--ink-2); font-size: 14px; }
+
+/* ---------- ficha (drawer) */
+.drawer { position: absolute; top: 0; right: 0; bottom: 0; width: min(var(--drawer-w), 100%); background: var(--panel); border-left: 1px solid var(--line); box-shadow: var(--shadow);
+  transform: translateX(105%); transition: transform .28s ease; display: flex; flex-direction: column; z-index: 6; }
+.drawer.open { transform: none; }
+.dr-head { display: grid; grid-template-columns: 48px 1fr 40px; gap: 12px; align-items: center; padding: 16px 16px 14px; border-bottom: 1px solid var(--line); }
+.dr-ic { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--panel-2); border: 1px solid var(--line); color: var(--accent); font-family: var(--font-data); font-weight: 500; font-size: 13px; }
+.dr-ic.fill { background: var(--c); border-color: transparent; color: var(--on-fill); }
+.dr-title { font-family: var(--font-display); font-weight: 600; font-size: 25px; line-height: 1.05; margin: 0; text-wrap: balance; }
+.dr-sub { font-size: 13.5px; color: var(--ink-3); margin: 2px 0 0; }
+.dr-close { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; display: grid; place-items: center; }
+.dr-body { overflow-y: auto; padding: 4px 20px 28px; min-height: 0; }
+.dr-body h3 { font-family: var(--font-display); font-weight: 600; font-size: 19px; margin: 20px 0 8px; letter-spacing: .01em; }
+.dr-body p { margin: 0 0 10px; color: var(--ink-2); max-width: 62ch; }
+.badge { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; border-radius: 999px; padding: 4px 11px; background: var(--panel-2); border: 1px solid var(--line); margin: 0 6px 6px 0; }
+.badge i { width: 9px; height: 9px; border-radius: 2px; background: var(--c); }
+dl.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; font-size: 14px; }
+dl.kv dt { color: var(--ink-3); }
+dl.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+dl.kv dd.mono { font-family: var(--font-data); font-size: 13px; }
+.rows { display: grid; gap: 0; }
+.row { display: grid; grid-template-columns: 10px 1fr auto; gap: 10px; align-items: center; padding: 8px 2px; border-bottom: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; cursor: pointer; font-size: 14px; width: 100%; }
+.row:hover { background: var(--panel-2); }
+.row i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+.row em { font-style: normal; font-family: var(--font-data); font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.row.static { cursor: default; }
+.row.static:hover { background: none; }
+.hbar { display: grid; grid-template-columns: 1fr; gap: 3px; margin: 6px 0; }
+.hbar .lab { display: flex; justify-content: space-between; font-size: 13px; }
+.hbar .lab em { font-style: normal; font-family: var(--font-data); font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.hbar .trk { height: 8px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+.hbar .trk div { height: 100%; border-radius: 999px; background: var(--c); }
+.cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; border: 0; background: var(--night); color: var(--night-ink); border-radius: 999px; padding: 9px 16px; font-weight: 600; cursor: pointer; }
+.tablewrap { overflow-x: auto; margin: 0 -4px; }
+table.lv { border-collapse: collapse; width: 100%; font-size: 13px; }
+table.lv th, table.lv td { padding: 6px 6px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+table.lv th { color: var(--ink-3); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+table.lv td.num { text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+table.lv td i { width: 8px; height: 8px; border-radius: 2px; background: var(--c); display: inline-block; margin-right: 6px; }
+.small { font-size: 12.5px; color: var(--ink-3); }
+
+/* ---------- teléfono */
+@media (max-width: 820px) {
+  :root { --side-w: 0px; }
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "stage"; }
+  .brand-sub, .top-btn .lbl { display: none; }
+  .brand-name { font-size: 20px; }
+  .top-btn { padding: 6px 11px; }
+  .list-btn { display: inline-flex; }
+  .side { position: fixed; left: 0; right: 0; bottom: 0; height: 62%; border-right: 0; border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; box-shadow: var(--shadow); padding-right: env(safe-area-inset-right, 0px);
+    transform: translateY(105%); transition: transform .28s ease; z-index: 7; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .side.open { transform: none; }
+  .drawer { top: auto; height: 70%; width: 100%; border-left: 0; border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; transform: translateY(105%); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); box-sizing: border-box; }
+  .drawer.open { transform: none; }
+  .views { bottom: max(14px, env(safe-area-inset-bottom, 0px)); }
+  .views button { padding: 8px 12px; }
+  .views button span { display: none; }
+  .views button[aria-pressed="true"] span { display: inline; }
+  .levelbadge .big { font-size: 30px; }
+  .chips { top: auto; bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 60px); left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px));
+    max-width: none; flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 2px; scrollbar-width: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip, .seg { flex: none; }
+  .levelbadge { right: max(14px, env(safe-area-inset-right, 0px)); grid-template-columns: auto 1fr auto; }
+  .side-help { font-size: 13.5px; }
+  .scalebar { bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 112px); }
+}
+@media (min-width: 821px) {
+  .chips { flex-direction: column; align-items: flex-end; }
+  .stage.drawer-open .chips { right: calc(var(--drawer-w) + 14px); max-width: calc(100% - var(--drawer-w) - 28px); flex-direction: column; align-items: flex-end; }
+  .stage.drawer-open .views { left: calc((100% - var(--drawer-w)) / 2); }
+  .chips, .views { transition: right .28s ease, left .28s ease; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hs::after { animation: none; }
+  .drawer, .side, .progress div { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <svg width="30" height="34" viewBox="0 0 30 34" aria-hidden="true">
+        <path d="M15 1 4 9l2 21 9 3z" fill="#2b6675"/><path d="M15 1l11 8-2 21-9 3z" fill="#67b5b8"/><path d="M4 9l11 6 11-6" fill="none" stroke="#dfeeee" stroke-width="1.2"/><path d="M15 15v18" stroke="#dfeeee" stroke-width="1.2"/>
+      </svg>
+      <div>
+        <div class="brand-name">Sky Fragment</div>
+        <div class="brand-sub">Gemelo digital · usos y plantas</div>
+      </div>
+    </div>
+    <div class="top-spacer"></div>
+    <button class="top-btn list-btn" id="listBtn" type="button" aria-controls="side" aria-expanded="false">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Lista
+    </button>
+    <a class="top-btn" href="../" hreflang="en" lang="en" aria-label="View in English" style="text-decoration:none">EN</a>
+    <button class="top-btn" id="aboutBtn" type="button" aria-label="Acerca del modelo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></svg><span class="lbl">Acerca del modelo</span>
+    </button>
+  </header>
+
+  <aside class="side" id="side" aria-label="Lista de la vista actual">
+    <div class="side-head">
+      <h1 class="side-title" id="sideTitle">Exterior</h1>
+      <p class="side-help" id="sideHelp"></p>
+    </div>
+    <label class="search" id="searchWrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>
+      <input id="search" type="search" placeholder="Buscar…" aria-label="Buscar en la lista" autocomplete="off">
+    </label>
+    <div class="side-list" id="sideList"></div>
+    <div class="side-foot">
+      <p class="foot-title">Usos</p>
+      <div class="legend" id="legend"></div>
+    </div>
+  </aside>
+
+  <main class="stage" id="stage">
+    <canvas id="c" aria-label="Modelo 3D de la torre Sky Fragment"></canvas>
+    <div class="overlay" id="hsLayer"></div>
+    <div class="levelbadge" id="levelBadge" hidden></div>
+    <div class="chips" id="chips"></div>
+    <div class="scalebar" id="scalebar" hidden><div class="bar" id="scaleBar"></div><div class="lbl"><span>0</span><span id="scaleLbl">10 m</span></div></div>
+    <div class="picktip" id="pickTip" hidden></div>
+    <nav class="views" aria-label="Vistas">
+      <button type="button" data-view="exterior" aria-pressed="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M9 21V6l3-3 3 3v15M5 21h14M12 9v2M12 14v2"/></svg><span>Exterior</span></button>
+      <button type="button" data-view="usos" aria-pressed="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="5" y="3" width="14" height="5" rx="1"/><rect x="5" y="10" width="14" height="5" rx="1"/><rect x="5" y="17" width="14" height="4" rx="1"/></svg><span>Usos</span></button>
+      <button type="button" data-view="plantas" aria-pressed="false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 8l9-5 9 5-9 5z"/><path d="M3 13l9 5 9-5"/><path d="M3 18l9 5 9-5"/></svg><span>Plantas</span></button>
+    </nav>
+    <div class="loading" id="loading">
+      <div class="loading-card">
+        <div class="big">Sky Fragment</div>
+        <div class="progress"><div id="progress"></div></div>
+        <p id="loadingMsg">Cargando el modelo…</p>
+      </div>
+    </div>
+    <aside class="drawer" id="drawer" aria-label="Ficha" aria-hidden="true">
+      <div class="dr-head">
+        <div class="dr-ic" id="drIc"></div>
+        <div><h2 class="dr-title" id="drTitle"></h2><p class="dr-sub" id="drSub"></p></div>
+        <button class="dr-close" id="drClose" type="button" aria-label="Cerrar ficha">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <div class="dr-body" id="drBody"></div>
+    </aside>
+  </main>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.183.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* ================================================================ utilidades */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf1 = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const nf0 = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 });
+const m2 = (v) => (v == null ? 's/d' : nf1.format(v) + ' m²');
+const npt = (e) => (e < -0.004 ? '−' : '+') + Math.abs(e).toFixed(2);
+const norm = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const DEPTS = ['comercio', 'oficinas', 'vivienda', 'nucleo'];
+const DEPT_NAME = { comercio: 'Comercio', oficinas: 'Oficinas', vivienda: 'Vivienda', nucleo: 'Núcleo' };
+const cvar = (d) => `var(--use-${d})`;
+const CUT = 1.3; // altura de corte de planta (m)
+
+const ICON = {
+  fragmentos: '<path d="M12 2 4 9l3 13h10l3-13z"/><path d="M4 9h16M12 2 9 9l3 13 3-13"/>',
+  piel: '<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 9l4-3M8 14l7-6"/>',
+  diagrid: '<path d="M5 3v18M19 3v18M5 3l14 9L5 21M19 3 5 12l14 9"/>',
+  muro_cortina: '<rect x="4" y="3" width="16" height="18"/><path d="M4 9h16M4 15h16M9.3 3v18M14.6 3v18"/>',
+  nucleo: '<rect x="7" y="3" width="10" height="18"/><path d="M10 7h4M10 11h4M10 15h4"/>',
+  acceso: '<path d="M6 21V3h10v18M3 21h18M13 12h.01"/>',
+  plaza: '<path d="M3 17l9-5 9 5-9 5z"/><path d="M12 12V4l4 2-4 2"/>',
+  estacionamiento: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
+  azotea: '<path d="M4 20h16M6 20v-8h12v8M3 12h18M12 4v3M7 6l1.5 2M17 6l-1.5 2"/>',
+  contexto: '<path d="M3 21h18M5 21V9h5v12M10 21V4h6v17M16 21v-8h3v8"/>',
+  chev: '<path d="M9 6l6 6-6 6"/>',
+  table: '<rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M3 14h18M9 4v16"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
+  up: '<path d="M6 15l6-6 6 6"/>',
+  down: '<path d="M6 9l6 6 6-6"/>',
+};
+const svg = (k, s = 20) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
+
+/* ================================================================ estado y DOM */
+const state = { view: 'exterior', level: null, plan: false, colorUses: true, ctx: { exterior: true, plantas: false }, skin: false, facadeUses: false, explode: false, selected: null };
+let model = null;
+const stage = $('#stage'), canvas = $('#c'), hsLayer = $('#hsLayer'), drawer = $('#drawer');
+
+/* ================================================================ escena */
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.localClippingEnabled = true;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.autoUpdate = false;
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
+const hemi = new THREE.HemisphereLight(0xeaf3f6, 0x8c9088, 1.25);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff6ea, 2.4);
+sun.position.set(55, 120, 70);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -70, right: 70, top: 70, bottom: -70, near: 10, far: 320 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+scene.add(sun, sun.target);
+
+const camera = new THREE.PerspectiveCamera(35, 1, 0.3, 3000);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.09;
+controls.maxPolarAngle = THREE.MathUtils.degToRad(88);
+controls.minDistance = 4; controls.maxDistance = 800;
+controls.screenSpacePanning = true;
+
+const clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e6); // conserva y <= constante
+let needsRender = true;
+const requestRender = () => { needsRender = true; };
+controls.addEventListener('change', requestRender);
+
+const groups = { shell: null, nodes: {}, levels: {}, uses: new THREE.Group(), overlay: new THREE.Group(), ground: null };
+scene.add(groups.uses, groups.overlay);
+groups.uses.visible = false;
+
+/* suelo propio para la vista de usos */
+{
+  const g = new THREE.CircleGeometry(48, 64); g.rotateX(-Math.PI / 2);
+  const m = new THREE.MeshStandardMaterial({ color: 0xdfe5e6, roughness: 1 });
+  groups.ground = new THREE.Mesh(g, m); groups.ground.receiveShadow = true; groups.ground.position.y = -0.02; groups.ground.visible = false;
+  scene.add(groups.ground);
+}
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / Math.max(h, 1); camera.updateProjectionMatrix();
+  if (viewOffset) applyViewOffset();
+  requestRender();
+}
+new ResizeObserver(resize).observe(stage);
+
+/* ================================================================ colores de uso (según tema) */
+const useColor = {};
+function readUseColors() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const d of DEPTS) useColor[d] = new THREE.Color(cs.getPropertyValue(`--use-${d}`).trim() || '#888');
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches && document.documentElement.dataset.theme !== 'light' || document.documentElement.dataset.theme === 'dark';
+  groups.ground.material.color.set(dark ? 0x1f272e : 0xdfe5e6);
+  hemi.color.set(dark ? 0xb8c8d2 : 0xeaf3f6);
+  for (const m of useMats.values()) m.color.copy(useColor[m.userData.dept]);
+  for (const n of Object.values(facadeMats)) n.forEach((m) => { if (state.facadeUses) m.color.copy(useColor[m.userData.dept]); });
+  requestRender();
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readUseColors);
+new MutationObserver(readUseColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+/* ================================================================ carga */
+/* 'b64': modelos publicados como texto base64 (data64/…txt); 'glb': archivos .glb normales (data/…glb) */
+const DATA_MODE = 'glb';
+const loader = new GLTFLoader();
+const progress = { total: 0, loaded: {} };
+function b64ToBytes(txt) {
+  txt = txt.trim();
+  if (Uint8Array.fromBase64) return Uint8Array.fromBase64(txt);
+  const s = atob(txt); const u = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+  return u;
+}
+async function loadGLB(url, weight) {
+  if (DATA_MODE !== 'b64') {
+    return new Promise((resolve, reject) => {
+      loader.load(url, resolve, (e) => { if (e.total) { progress.loaded[url] = (e.loaded / e.total) * weight; updateProgress(); } }, reject);
+    });
+  }
+  const rel = url.replace(/^data\//, '').replace(/\.glb$/, '.txt');
+  const res = await fetch('data64/' + rel);
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + rel);
+  const expected = (model.b64 && model.b64[rel]) || +res.headers.get('content-length') || 0;
+  const reader = res.body.getReader(); const chunks = []; let got = 0;
+  for (;;) {
+    const { done, value } = await reader.read(); if (done) break;
+    chunks.push(value); got += value.length;
+    if (expected) { progress.loaded[url] = Math.min(1, got / expected) * weight; updateProgress(); }
+  }
+  const all = new Uint8Array(got); let o = 0; for (const c of chunks) { all.set(c, o); o += c.length; }
+  const bytes = b64ToBytes(new TextDecoder().decode(all));
+  return new Promise((resolve, reject) => loader.parse(bytes.buffer, '', resolve, reject));
+}
+function updateProgress() {
+  const p = Object.values(progress.loaded).reduce((a, b) => a + b, 0) / progress.total;
+  $('#progress').style.width = Math.round(Math.min(1, p) * 100) + '%';
+}
+
+const pocheMat = new THREE.MeshBasicMaterial({ color: 0x2a313a, side: THREE.BackSide, clippingPlanes: [clipPlane] });
+function addPoche(mesh) {
+  if (mesh.material.transparent) return;
+  mesh.material.side = THREE.FrontSide;
+  const back = new THREE.Mesh(mesh.geometry, pocheMat);
+  back.raycast = () => {}; back.userData.poche = true; back.castShadow = false;
+  mesh.add(back);
+}
+function prepTower(obj, { poche = false } = {}) {
+  const meshes = [];
+  obj.traverse((o) => { if (o.isMesh && !o.userData.poche) meshes.push(o); });
+  for (const o of meshes) {
+    o.material.clippingPlanes = [clipPlane]; o.material.clipShadows = true;
+    o.castShadow = !o.material.transparent;
+    o.receiveShadow = true;
+    if (poche && !o.userData.hasPoche) { addPoche(o); o.userData.hasPoche = true; }
+  }
+}
+const facadeMats = {};
+async function loadShell() {
+  const gltf = await loadGLB('data/shell.glb', 3);
+  const root = gltf.scene;
+  groups.shell = root; scene.add(root);
+  root.traverse((o) => {
+    const key = o.userData && o.userData.key;
+    if (!key) return;
+    groups.nodes[key] = o;
+    if (o.userData.tower) prepTower(o, { poche: ['nucleo', 'diagrid', 'losas', 'cw_comercio', 'cw_oficinas', 'cw_vivienda'].includes(key) });
+    else o.traverse((m) => { if (m.isMesh) { m.receiveShadow = true; m.castShadow = key === 'sitio'; } });
+    if (key.startsWith('cw_')) {
+      const dept = key.slice(3); facadeMats[key] = [];
+      o.traverse((m) => {
+        if (!m.isMesh || m.userData.poche || m.material.transparent) return;
+        m.material = m.material.clone(); m.material.clippingPlanes = [clipPlane]; m.material.clipShadows = true;
+        m.material.userData.dept = dept; m.material.userData.base = m.material.color.clone();
+        facadeMats[key].push(m.material);
+      });
+    }
+  });
+}
+const levelLoads = {};
+function loadLevel(id) {
+  if (levelLoads[id]) return levelLoads[id];
+  const L = model.levels.find((l) => l.id === id);
+  levelLoads[id] = loadGLB('data/' + L.file, 1).then((gltf) => {
+    const root = gltf.scene; let feats = [];
+    root.traverse((o) => { if (o.userData && o.userData.features) feats = o.userData.features; });
+    root.userData.levelId = id; root.userData.features = feats;
+    root.traverse((o) => { if (o.isMesh) o.userData.levelId = id; });
+    root.children.forEach((c) => c.traverse((n) => { if (n.userData && n.userData.key === 'muros') prepTower(n, { poche: true }); }));
+    prepTower(root);
+    root.visible = false; scene.add(root);
+    groups.levels[id] = root;
+    return root;
+  });
+  return levelLoads[id];
+}
+
+/* ================================================================ diagrama de usos (bloques extruidos) */
+const useMats = new Map();
+const blockMeshes = [];
+function useMat(dept) {
+  if (!useMats.has(dept)) {
+    const m = new THREE.MeshStandardMaterial({ color: useColor[dept] || 0x888888, roughness: .62, metalness: 0, emissive: 0x000000 });
+    m.userData.dept = dept; useMats.set(dept, m);
+  }
+  return useMats.get(dept);
+}
+function shapeFromPoly(p) {
+  const s = new THREE.Shape(p.o.map(([x, y]) => new THREE.Vector2(x, y)));
+  for (const h of p.h) s.holes.push(new THREE.Path(h.map(([x, y]) => new THREE.Vector2(x, y))));
+  return s;
+}
+function extrude(polys, depth) {
+  const shapes = polys.map(shapeFromPoly);
+  const g = new THREE.ExtrudeGeometry(shapes, { depth, bevelEnabled: false, curveSegments: 1 });
+  g.rotateX(-Math.PI / 2);
+  return g;
+}
+function groupIndex(L) { return L.dept === 'oficinas' ? 1 : L.dept === 'vivienda' ? 2 : 0; }
+function buildUses() {
+  const lineMat = new THREE.LineBasicMaterial({ color: 0x6f7b86, transparent: true, opacity: .55 });
+  for (const L of model.levels) {
+    const lg = new THREE.Group(); lg.userData.levelId = L.id; lg.userData.baseY = L.elev; lg.userData.gi = groupIndex(L);
+    const depth = Math.max(0.6, L.h - 0.45);
+    for (const z of L.zones) {
+      if (!z.poly.length) continue;
+      const mesh = new THREE.Mesh(extrude(z.poly, depth), useMat(z.dept));
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      mesh.userData = { levelId: L.id, dept: z.dept, zone: z };
+      lg.add(mesh); blockMeshes.push(mesh);
+    }
+    if (L.core.poly.length) {
+      const mesh = new THREE.Mesh(extrude(L.core.poly, depth), useMat('nucleo'));
+      mesh.castShadow = true; mesh.receiveShadow = true;
+      mesh.userData = { levelId: L.id, dept: 'nucleo' };
+      lg.add(mesh); blockMeshes.push(mesh);
+    }
+    for (const p of L.plate.poly) {
+      const pts = p.o.map(([x, y]) => new THREE.Vector3(x, 0.02, -y));
+      const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), lineMat);
+      lg.add(line);
+    }
+    lg.position.y = L.elev;
+    groups.uses.add(lg);
+  }
+}
+function applyExplode(animate = true) {
+  const target = (gi) => (state.explode ? gi * 4 : 0);
+  const kids = groups.uses.children;
+  const from = kids.map((k) => k.position.y);
+  const to = kids.map((k) => k.userData.baseY + target(k.userData.gi));
+  tween(animate ? 600 : 0, (t) => { kids.forEach((k, i) => { k.position.y = from[i] + (to[i] - from[i]) * t; }); sun.shadow.needsUpdate = true; }, null, 'explode');
+}
+
+/* ================================================================ superposición de usos en planta */
+function buildOverlay(L) {
+  groups.overlay.clear();
+  if (!state.colorUses) return;
+  const y = L.elev + 0.035;
+  const add = (polys, dept, op) => {
+    const g = new THREE.ShapeGeometry(polys.map(shapeFromPoly)); g.rotateX(-Math.PI / 2);
+    const m = new THREE.MeshBasicMaterial({ color: useColor[dept], transparent: true, opacity: op, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(g, m); mesh.position.y = y; mesh.renderOrder = 2; mesh.raycast = () => {};
+    groups.overlay.add(mesh);
+  };
+  for (const z of L.zones) if (z.poly.length) add(z.poly, z.dept, 0.42);
+  if (L.core.poly.length) add(L.core.poly, 'nucleo', 0.5);
+}
+
+/* ================================================================ cámara */
+const anims = {};
+function tween(ms, step, done, ch = 'cam') {
+  if (anims[ch]) anims[ch].cancel = true;
+  if (!ms || reduceMotion) { step(1); done && done(); requestRender(); return; }
+  const a = { cancel: false }; anims[ch] = a; const t0 = performance.now();
+  const ease = (t) => (t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  (function f(now) {
+    if (a.cancel) return;
+    const t = Math.min(1, (now - t0) / ms); step(ease(t)); requestRender();
+    if (t < 1) requestAnimationFrame(f); else { anims[ch] = null; done && done(); }
+  })(t0);
+}
+/* desplazamiento del centro de vista cuando la ficha ocupa la derecha (escritorio) */
+let viewOffset = 0;
+function applyViewOffset() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (Math.abs(viewOffset) < 0.5) camera.clearViewOffset(); else camera.setViewOffset(w, h, viewOffset, 0, w, h);
+  camera.updateProjectionMatrix(); requestRender();
+}
+function setDrawerOffset(open) {
+  const desktop = matchMedia('(min-width: 821px)').matches;
+  const to = open && desktop ? Math.min(drawer.offsetWidth || 400, stage.clientWidth * 0.5) / 2 : 0;
+  const from = viewOffset;
+  tween(280, (k) => { viewOffset = from + (to - from) * k; applyViewOffset(); }, null, 'offset');
+}
+const sph = new THREE.Spherical();
+function flyTo({ target, dist, polar, az, fov = 35 }, ms = 950) {
+  const t0 = controls.target.clone();
+  sph.setFromVector3(camera.position.clone().sub(t0));
+  const r0 = sph.radius, p0 = sph.phi; let a0 = sph.theta; const f0 = camera.fov;
+  const r1 = dist, p1 = THREE.MathUtils.degToRad(polar);
+  let a1 = az == null ? a0 : THREE.MathUtils.degToRad(az);
+  while (a1 - a0 > Math.PI) a1 -= 2 * Math.PI; while (a1 - a0 < -Math.PI) a1 += 2 * Math.PI;
+  const t1 = new THREE.Vector3(...target);
+  tween(ms, (k) => {
+    const tg = t0.clone().lerp(t1, k);
+    const s = new THREE.Spherical(r0 + (r1 - r0) * k, p0 + (p1 - p0) * k, a0 + (a1 - a0) * k);
+    controls.target.copy(tg); camera.position.copy(tg).add(new THREE.Vector3().setFromSpherical(s));
+    camera.fov = f0 + (fov - f0) * k; camera.updateProjectionMatrix();
+    controls.update();
+  });
+}
+
+/* ================================================================ vistas */
+const VIEW_TEXT = {
+  exterior: ['Exterior', 'Recorre la torre por fuera. Toca un punto para ver qué es y qué dice el modelo.'],
+  usos: ['Usos', 'Cada nivel, coloreado por su uso. Superficies de piso terminado medidas en el modelo.'],
+  plantas: ['Plantas', 'Elige un nivel. El modelo se corta a 1.30 m sobre el piso, como en un plano.'],
+};
+function setView(view, opts = {}) {
+  state.view = view;
+  document.querySelectorAll('.views button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
+  $('#sideTitle').textContent = VIEW_TEXT[view][0];
+  $('#sideHelp').textContent = VIEW_TEXT[view][1];
+  $('#search').value = '';
+  const towerKeys = ['fragmentos', 'piel', 'diagrid', 'losas', 'nucleo', 'cw_comercio', 'cw_oficinas', 'cw_vivienda'];
+  const showTower = view !== 'usos';
+  towerKeys.forEach((k) => groups.nodes[k] && (groups.nodes[k].visible = showTower));
+  if (groups.nodes.sitio) groups.nodes.sitio.visible = view !== 'usos';
+  if (groups.nodes.contexto) groups.nodes.contexto.visible = view !== 'usos' && state.ctx[view];
+  ['fragmentos', 'piel'].forEach((k) => groups.nodes[k] && (groups.nodes[k].visible = view === 'exterior' || (view === 'plantas' && state.skin)));
+  groups.uses.visible = view === 'usos';
+  groups.ground.visible = view === 'usos';
+  groups.overlay.visible = view === 'plantas';
+  $('#levelBadge').hidden = view !== 'plantas';
+  $('#scalebar').hidden = !(view === 'plantas' && state.plan);
+  controls.enableRotate = !(view === 'plantas' && state.plan);
+  hidePick();
+  if (view !== 'plantas') {
+    clipPlane.constant = 1e6;
+    for (const [id, g] of Object.entries(groups.levels)) g.visible = view === 'exterior' && (id === 'PB' || id === 'AZ');
+    groups.overlay.clear();
+  }
+  if (!opts.keepDrawer && view !== 'plantas') closeDrawer();
+  renderChips(); renderSide(); renderHotspots();
+  if (view === 'exterior') { flyTo({ target: [0, 26, 0], dist: 138, polar: 73, az: 35 }, opts.instant ? 0 : 950); setHash('exterior'); }
+  if (view === 'usos') { flyTo({ target: [0, 31, 0], dist: 118, polar: 70, az: 38 }, opts.instant ? 0 : 950); setHash('usos'); }
+  if (view === 'plantas') selectLevel(opts.level || state.level || 'N05', { instant: opts.instant, keepDrawer: opts.keepDrawer });
+  sun.shadow.needsUpdate = true; requestRender();
+}
+async function selectLevel(id, opts = {}) {
+  const L = model.levels.find((l) => l.id === id); if (!L) return;
+  state.level = id; setHash('plantas-' + id.toLowerCase());
+  clipPlane.constant = L.elev + CUT;
+  renderLevelBadge(L); renderSide(); renderHotspots();
+  const planView = { target: [0, L.elev, 0], dist: 62, polar: 0.01, az: 0, fov: 30 };
+  const axoView = { target: [0, L.elev + 0.5, 0], dist: 60, polar: 50, az: null, fov: 35 };
+  flyTo(state.plan ? planView : axoView, opts.instant ? 0 : 850);
+  buildOverlay(L);
+  if (!opts.keepDrawer && matchMedia('(min-width: 821px)').matches) openLevel(L);
+  const pending = !groups.levels[id];
+  if (pending) $('#levelBadge').querySelector('.meta').insertAdjacentHTML('beforeend', '<span id="lvLoading"> · cargando interior…</span>');
+  const root = await loadLevel(id).catch(() => null);
+  const ld = $('#lvLoading'); if (ld) ld.remove();
+  if (!root) { $('#levelBadge').querySelector('.meta').insertAdjacentHTML('beforeend', '<span> · no se pudo cargar el interior</span>'); }
+  if (state.view !== 'plantas' || state.level !== id) return;
+  for (const [lid, g] of Object.entries(groups.levels)) g.visible = lid === id;
+  sun.shadow.needsUpdate = true; requestRender();
+}
+function setPlan(on) {
+  state.plan = on; renderChips(); hsLayer.classList.toggle('show-tips', state.view === 'plantas' && on);
+  controls.enableRotate = !on;
+  $('#scalebar').hidden = !on;
+  if (state.view === 'plantas') selectLevel(state.level, { keepDrawer: true });
+}
+
+/* ================================================================ chips de opciones */
+function renderChips() {
+  const c = $('#chips'); const v = state.view; let html = '';
+  if (v === 'plantas') {
+    html += `<div class="seg" role="group" aria-label="Tipo de vista"><button type="button" data-act="axo" aria-pressed="${!state.plan}">3D</button><button type="button" data-act="plan" aria-pressed="${state.plan}">Planta</button></div>`;
+    html += `<button class="chip" type="button" data-act="coloruses" aria-pressed="${state.colorUses}"><span class="dot"></span>Colorear por uso</button>`;
+  }
+  if (v === 'exterior') html += `<button class="chip" type="button" data-act="facade" aria-pressed="${state.facadeUses}"><span class="dot"></span>Fachada por uso</button>`;
+  if (v === 'usos') html += `<button class="chip" type="button" data-act="explode" aria-pressed="${state.explode}"><span class="dot"></span>Separar usos</button>`;
+  if (v === 'plantas') html += `<button class="chip" type="button" data-act="skin" aria-pressed="${state.skin}"><span class="dot"></span>Piel y fragmentos</button>`;
+  if (v !== 'usos') html += `<button class="chip" type="button" data-act="context" aria-pressed="${state.ctx[v]}"><span class="dot"></span>Contexto urbano</button>`;
+  c.innerHTML = html;
+}
+$('#chips').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'plan') setPlan(true);
+  if (act === 'axo') setPlan(false);
+  if (act === 'coloruses') { state.colorUses = !state.colorUses; const L = curLevel(); if (L) buildOverlay(L); renderChips(); requestRender(); }
+  if (act === 'context') { state.ctx[state.view] = !state.ctx[state.view]; if (groups.nodes.contexto) groups.nodes.contexto.visible = state.ctx[state.view]; renderChips(); sun.shadow.needsUpdate = true; requestRender(); }
+  if (act === 'skin') { state.skin = !state.skin; ['fragmentos', 'piel'].forEach((k) => groups.nodes[k] && (groups.nodes[k].visible = state.skin)); renderChips(); sun.shadow.needsUpdate = true; requestRender(); }
+  if (act === 'explode') { state.explode = !state.explode; applyExplode(); renderChips(); flyTo({ target: [0, state.explode ? 35 : 31, 0], dist: state.explode ? 136 : 118, polar: 70, az: null }, 700); }
+  if (act === 'facade') { state.facadeUses = !state.facadeUses; setFacadeUses(state.facadeUses); renderChips(); }
+});
+function setFacadeUses(on) {
+  for (const list of Object.values(facadeMats)) list.forEach((m) => m.color.copy(on ? useColor[m.userData.dept] : m.userData.base));
+  requestRender();
+}
+const curLevel = () => model && model.levels.find((l) => l.id === state.level);
+
+/* ================================================================ insignia de nivel */
+function levelsTopDown() { return [...model.levels].reverse(); }
+function renderLevelBadge(L) {
+  const i = model.levels.indexOf(L);
+  const uses = L.mixed ? 'Uso mixto' : DEPT_NAME[L.dept];
+  $('#levelBadge').innerHTML = `
+    <div class="big">${esc(L.id)}</div>
+    <div class="nm">${esc(L.name)}</div>
+    <div class="meta"><i style="--c:${cvar(L.dept)}"></i>${esc(uses)} · NPT ${npt(L.elev)} m</div>
+    <div class="stepper">
+      <button type="button" data-step="1" aria-label="Subir un nivel" ${i >= model.levels.length - 1 ? 'disabled' : ''}>${svg('up', 18)}</button>
+      <button type="button" data-step="-1" aria-label="Bajar un nivel" ${i <= 0 ? 'disabled' : ''}>${svg('down', 18)}</button>
+    </div>`;
+}
+$('#levelBadge').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-step]'); if (!b) return;
+  stepLevel(+b.dataset.step);
+});
+function stepLevel(d) {
+  const i = model.levels.findIndex((l) => l.id === state.level);
+  const j = Math.max(0, Math.min(model.levels.length - 1, i + d));
+  if (j !== i) selectLevel(model.levels[j].id);
+}
+
+/* ================================================================ barra lateral */
+function levelUseLabel(L) { return L.mixed ? L.depts.map((d) => DEPT_NAME[d]).join(' · ') : DEPT_NAME[L.dept]; }
+function deptRanges(dept) {
+  const ids = model.levels.filter((L) => (L.areaByDept[dept] || 0) > 0).map((L) => L.id);
+  const idx = ids.map((id) => model.levels.findIndex((l) => l.id === id));
+  const out = []; let s = 0;
+  for (let k = 1; k <= idx.length; k++) {
+    if (k === idx.length || idx[k] !== idx[k - 1] + 1) { out.push(k - 1 === s ? ids[s] : `${ids[s]}–${ids[k - 1]}`); s = k; }
+  }
+  return out.join(', ');
+}
+function entranceGroups() {
+  const out = [];
+  for (const e of model.entrances) {
+    const base = e.key.replace(/\s*\d+$/, '');
+    let g = out.find((x) => x.key === base);
+    if (!g) { g = { key: base, name: base === 'Cafe' ? 'Accesos del café' : e.name, items: [] }; out.push(g); }
+    g.items.push(e);
+  }
+  for (const g of out) { const n = g.items.length; g.pos = [0, 1, 2].map((i) => g.items.reduce((a, e) => a + e.pos[i], 0) / n); }
+  return out;
+}
+function exteriorItems() {
+  const A = model.anchors, F = model.features;
+  const az = model.levels.find((l) => l.id === 'AZ');
+  const sky = az.rooms.find((r) => r.numModelo === 'R-01');
+  const items = [
+    { key: 'fragmentos', title: 'Fragmentos de cristal', sub: `${nf0.format(F.fragmentos.objetos)} paneles de fachada`, icon: 'fragmentos', pos: A.fragmentos },
+    { key: 'piel', title: 'Piel de vidrio', sub: 'Capa exterior continua', icon: 'piel', pos: A.piel },
+    { key: 'diagrid', title: 'Diagrid', sub: `${nf0.format(F.diagrid.objetos)} elementos estructurales`, icon: 'diagrid', pos: A.diagrid },
+    { key: 'muro_cortina', title: 'Muro cortina', sub: 'El tipo cambia con el uso', icon: 'muro_cortina', pos: A.muro_cortina },
+    { key: 'nucleo', title: 'Núcleo', sub: 'Escalera y elevadores', icon: 'nucleo', pos: A.nucleo },
+    ...entranceGroups().map((g) => ({ key: 'acc:' + g.key, title: g.name, sub: g.items.length > 1 ? `Planta baja · ${g.items.length} accesos` : 'Planta baja', icon: 'acceso', pos: g.pos })),
+    { key: 'azotea', title: 'Azotea', sub: 'Terrazas y alberca', icon: 'azotea', pos: sky ? sky.pos : [0, az.elev, 0] },
+    { key: 'plaza', title: 'Plaza', sub: 'Espacio público al pie de la torre', icon: 'plaza', pos: A.plaza },
+    { key: 'estacionamiento', title: 'Estacionamiento', sub: `${model.parkingStalls.length} cajones`, icon: 'estacionamiento', pos: A.estacionamiento },
+    { key: 'contexto', title: 'Contexto urbano', sub: `${nf0.format(F.contexto.objetos)} elementos vecinos`, icon: 'contexto', pos: null },
+  ];
+  return items;
+}
+function renderSide() {
+  const list = $('#sideList'); const v = state.view; let html = '';
+  $('#searchWrap').hidden = v === 'usos';
+  if (v === 'exterior') {
+    html = exteriorItems().map((it) => `
+      <button class="item${state.selected === it.key ? ' is-active' : ''}" type="button" data-feature="${esc(it.key)}" data-search="${esc(norm(it.title + ' ' + it.sub))}">
+        <span class="ic">${svg(it.icon)}</span><span><span class="t">${esc(it.title)}</span><br><span class="s">${esc(it.sub)}</span></span><span class="go">${svg('chev', 16)}</span>
+      </button>`).join('');
+  }
+  if (v === 'usos') {
+    const T = model.totals.areaByDept; const tot = ['comercio', 'oficinas', 'vivienda'].reduce((a, d) => a + (T[d] || 0), 0);
+    html += `<div class="usebar" role="img" aria-label="Superficie por uso: ${['comercio', 'oficinas', 'vivienda'].map((d) => `${DEPT_NAME[d]} ${Math.round(100 * T[d] / tot)} %`).join(', ')}">` +
+      ['comercio', 'oficinas', 'vivienda'].map((d) => `<div style="--c:${cvar(d)};flex:${T[d]}" title="${DEPT_NAME[d]}: ${m2(T[d])}">${Math.round(100 * T[d] / tot)} %</div>`).join('') + '</div>';
+    html += `<p class="note">Total con uso asignado: ${m2(tot)} de piso terminado. Suma de losas por nivel: ${m2(model.totals.gfa)}.</p>`;
+    html += '<div class="usecards">' + ['vivienda', 'oficinas', 'comercio', 'nucleo'].map((d) => {
+      const area = d === 'nucleo' ? model.totals.core : T[d];
+      const share = d === 'nucleo' ? 'huella por nivel' : `${Math.round(100 * area / tot)} %`;
+      const lv = d === 'nucleo' ? 'De planta baja a azotea' : `Niveles: ${deptRanges(d)}`;
+      return `<button class="usecard${state.selected === 'dept:' + d ? ' is-active' : ''}" type="button" data-dept="${d}">
+        <span class="sw" style="--c:${cvar(d)}"></span><span class="t">${DEPT_NAME[d]}</span><span class="a">${m2(area)}</span>
+        <span class="d">${esc(lv)} · ${share}</span></button>`;
+    }).join('') + '</div>';
+    html += `<button class="linkbtn" type="button" data-table="1">Ver tabla por nivel</button>`;
+  }
+  if (v === 'plantas') {
+    html = levelsTopDown().map((L) => {
+      const active = L.id === state.level;
+      const chips = (L.mixed ? L.depts : [L.dept]).map((d) => `<i style="--c:${cvar(d)}"></i>`).join('');
+      let rows = `<button class="lvl${active ? ' is-active' : ''}" type="button" data-level="${L.id}" aria-current="${active}" data-search="${esc(norm(L.id + ' ' + L.name + ' ' + levelUseLabel(L) + ' ' + L.rooms.map((r) => r.name + ' ' + r.num).join(' ')))}">
+        <span class="code">${esc(L.id)}</span><span><span class="n">${esc(L.name)}</span><span class="u">${chips}${esc(levelUseLabel(L))}</span></span><span class="e">${npt(L.elev)}</span></button>`;
+      if (active) {
+        const rs = L.rooms.filter((r) => !r.tipo);
+        rows += `<div class="spaces">${rs.map((r) => `<button class="sp" type="button" data-room="${esc(r.num)}"><i style="--c:${cvar(r.dept)}"></i><b>${esc(r.name)}</b><em>${r.area ? m2(r.area) : esc(r.num)}</em></button>`).join('') || '<span class="small">Sin espacios etiquetados en este nivel.</span>'}</div>`;
+      }
+      return rows;
+    }).join('');
+  }
+  list.innerHTML = html;
+  if (v === 'plantas') {
+    const a = list.querySelector('.lvl.is-active');
+    if (a) { const top = a.offsetTop - list.offsetTop, bottom = top + a.offsetHeight; if (top < list.scrollTop || bottom > list.scrollTop + list.clientHeight) list.scrollTop = Math.max(0, top - list.clientHeight / 3); }
+  }
+}
+$('#search').addEventListener('input', (e) => {
+  const q = norm(e.target.value.trim());
+  $('#sideList').querySelectorAll('[data-search]').forEach((el) => { el.hidden = q && !el.dataset.search.includes(q); });
+});
+$('#sideList').addEventListener('click', (e) => {
+  const f = e.target.closest('[data-feature]'), lv = e.target.closest('[data-level]'), rm = e.target.closest('[data-room]'), dp = e.target.closest('[data-dept]'), tb = e.target.closest('[data-table]');
+  if (f) { openFeature(f.dataset.feature, true); closeSideOnMobile(); }
+  if (lv) { selectLevel(lv.dataset.level); }
+  if (rm) { const L = curLevel(); const r = L.rooms.find((x) => x.num === rm.dataset.room); if (r) { openRoom(L, r); focusPoint(r.pos); closeSideOnMobile(); } }
+  if (dp) { openDept(dp.dataset.dept); closeSideOnMobile(); }
+  if (tb) { openTable(); closeSideOnMobile(); }
+});
+function closeSideOnMobile() { if (matchMedia('(max-width: 820px)').matches) toggleSide(false); }
+function toggleSide(open) { $('#side').classList.toggle('open', open); $('#listBtn').setAttribute('aria-expanded', String(open)); }
+$('#listBtn').addEventListener('click', () => toggleSide(!$('#side').classList.contains('open')));
+$('#legend').innerHTML = DEPTS.map((d) => `<span><i class="sw" style="--c:${cvar(d)}"></i>${DEPT_NAME[d]}</span>`).join('');
+
+/* ================================================================ puntos de interés (hotspots) y etiquetas */
+let hotspots = [];
+function renderHotspots() {
+  hsLayer.innerHTML = ''; hotspots = [];
+  hsLayer.classList.toggle('show-tips', state.view === 'plantas' && state.plan);
+  const add = (pos, label, color, onClick, key, tag = false) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'hs' + (tag ? ' tag' : '') + (state.selected === key ? ' is-active' : ''); b.setAttribute('aria-label', label);
+    if (color) b.style.setProperty('--c', color);
+    b.innerHTML = `<span class="tip">${esc(label)}</span>`;
+    b.addEventListener('click', (e) => { e.stopPropagation(); onClick(); });
+    hsLayer.appendChild(b);
+    hotspots.push({ el: b, v: new THREE.Vector3(...pos), key });
+  };
+  if (!model) return;
+  if (state.view === 'exterior') {
+    for (const it of exteriorItems()) if (it.pos) add(it.pos, it.title, null, () => openFeature(it.key), it.key);
+  }
+  if (state.view === 'plantas') {
+    const L = curLevel(); if (!L) return;
+    for (const r of L.rooms) add(r.pos, r.tipo ? r.name : `${r.name}${r.area ? ' · ' + m2(r.area) : ''}`, cvar(r.dept), () => (r.tipo ? openLevel(L) : openRoom(L, r)), 'room:' + r.num + r.name, r.tipo || (r.area || 0) >= 10);
+  }
+  if (state.view === 'usos') {
+    for (const d of ['vivienda', 'oficinas', 'comercio']) {
+      const lv = model.levels.filter((L) => L.dept === d && !L.mixed);
+      const mid = (lv[0].elev + lv[lv.length - 1].elev + lv[lv.length - 1].h) / 2;
+      const gi = groupIndex(lv[0]);
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'uselabel';
+      el.innerHTML = `<i class="sw" style="--c:${cvar(d)}"></i><b>${DEPT_NAME[d]}</b><small>${esc(deptRanges(d))}</small>`;
+      el.addEventListener('click', () => openDept(d));
+      hsLayer.appendChild(el);
+      hotspots.push({ el, v: new THREE.Vector3(0, mid, 0), key: 'dept:' + d, label: true, gi });
+    }
+  }
+  placeHotspots();
+}
+const _v = new THREE.Vector3(), _right = new THREE.Vector3();
+function placeHotspots() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  _right.setFromMatrixColumn(camera.matrixWorld, 0); _right.y = 0; _right.normalize().multiplyScalar(15.5);
+  for (const hs of hotspots) {
+    _v.copy(hs.v);
+    if (hs.label) { _v.add(_right); if (state.explode) _v.y += hs.gi * 4; }
+    _v.project(camera);
+    const vis = _v.z < 1 && Math.abs(_v.x) < 1.05 && Math.abs(_v.y) < 1.05;
+    hs.el.hidden = !vis;
+    hs.sx = ((_v.x + 1) / 2) * w; hs.sy = ((1 - _v.y) / 2) * h; hs.vis = vis;
+    if (vis) hs.el.style.transform = `translate(${hs.sx}px, ${hs.sy}px)` + (hs.label ? ' translateY(-50%)' : '');
+  }
+  if (hsLayer.classList.contains('show-tips')) layoutTags();
+}
+function layoutTags() {
+  const tags = hotspots.filter((h) => h.vis && h.el.classList.contains('tag'));
+  const placed = [];
+  const hit = (r) => placed.some((p) => r.x < p.x + p.w && r.x + r.w > p.x && r.y < p.y + p.h && r.y + r.h > p.y);
+  tags.sort((a, b) => a.sy - b.sy);
+  for (const h of tags) {
+    const tip = h.el.firstElementChild;
+    if (!h.tw) { h.tw = tip.offsetWidth; h.th = tip.offsetHeight; }
+    const above = { x: h.sx - h.tw / 2, y: h.sy - 15 - 6 - h.th, w: h.tw, h: h.th };
+    const below = { x: h.sx - h.tw / 2, y: h.sy + 15 + 4, w: h.tw, h: h.th };
+    h.el.classList.remove('below', 'notip');
+    if (!hit(above)) placed.push(above);
+    else if (!hit(below)) { h.el.classList.add('below'); placed.push(below); }
+    else h.el.classList.add('notip');
+  }
+}
+function focusPoint(pos) {
+  if (state.view === 'plantas' && state.plan) return;
+  const s = new THREE.Spherical().setFromVector3(camera.position.clone().sub(controls.target));
+  flyTo({ target: pos, dist: Math.min(s.radius, 30), polar: THREE.MathUtils.radToDeg(s.phi), az: THREE.MathUtils.radToDeg(s.theta), fov: camera.fov }, 700);
+}
+
+/* ================================================================ ficha (drawer) */
+function openDrawer({ icon, iconFill, title, sub, body, key }) {
+  state.selected = key || null;
+  const ic = $('#drIc');
+  ic.className = 'dr-ic' + (iconFill ? ' fill' : ''); ic.style.setProperty('--c', iconFill || '');
+  ic.innerHTML = icon || '';
+  $('#drTitle').textContent = title; $('#drSub').textContent = sub || '';
+  $('#drBody').innerHTML = body; $('#drBody').scrollTop = 0;
+  if (!drawer.classList.contains('open')) setDrawerOffset(true);
+  drawer.classList.add('open'); drawer.setAttribute('aria-hidden', 'false'); stage.classList.add('drawer-open');
+  hotspots.forEach((h) => h.el.classList.toggle('is-active', h.key === key));
+  $('#sideList').querySelectorAll('[data-feature]').forEach((el) => el.classList.toggle('is-active', el.dataset.feature === key));
+}
+function closeDrawer() {
+  if (drawer.classList.contains('open')) setDrawerOffset(false);
+  drawer.classList.remove('open'); drawer.setAttribute('aria-hidden', 'true'); stage.classList.remove('drawer-open'); state.selected = null;
+  hotspots.forEach((h) => h.el.classList.remove('is-active'));
+  $('#sideList').querySelectorAll('.is-active[data-feature]').forEach((el) => el.classList.remove('is-active'));
+  clearHighlight();
+}
+$('#drClose').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { if (drawer.classList.contains('open')) closeDrawer(); else toggleSide(false); }
+  if (state.view === 'plantas' && !e.target.closest('input') && (e.key === 'PageUp' || e.key === 'PageDown')) { e.preventDefault(); stepLevel(e.key === 'PageUp' ? 1 : -1); }
+});
+$('#drBody').addEventListener('click', (e) => {
+  const lv = e.target.closest('[data-goto-level]'), rm = e.target.closest('[data-room]'), dp = e.target.closest('[data-dept]');
+  if (lv) setView('plantas', { level: lv.dataset.gotoLevel });
+  if (rm) { const L = curLevel(); const r = L && L.rooms.find((x) => x.num === rm.dataset.room); if (r) { openRoom(L, r); focusPoint(r.pos); } }
+  if (dp) openDept(dp.dataset.dept);
+});
+const kv = (pairs) => `<dl class="kv">${pairs.filter(Boolean).map(([k, v, mono]) => `<dt>${esc(k)}</dt><dd${mono ? ' class="mono"' : ''}>${v}</dd>`).join('')}</dl>`;
+const badge = (d, text) => `<span class="badge"><i style="--c:${cvar(d)}"></i>${esc(text || DEPT_NAME[d])}</span>`;
+const hbars = (rows, max) => (max = Math.max(max, 1e-6), rows).map(([label, val, d, txt]) => `<div class="hbar"><div class="lab"><span>${esc(label)}</span><em>${txt || m2(val)}</em></div><div class="trk"><div style="--c:${cvar(d)};width:${Math.max(1.5, 100 * val / max)}%"></div></div></div>`).join('');
+const CIRC = /^(Escalera de emergencia|Puertas de elevador|Cabina de elevador)/;
+const CAT_NAME = { pisos: 'Pisos', muros: 'Muros', puertas: 'Puertas', escaleras: 'Escaleras', barandales: 'Barandales', mobiliario: 'Mobiliario', carpinteria: 'Carpintería', sanitarios: 'Muebles sanitarios', equipo: 'Equipo especial', genericos: 'Elementos genéricos', luminarias: 'Luminarias' };
+
+function openLevel(L) {
+  const uses = (L.mixed ? L.depts : [L.dept]);
+  const areaRows = Object.entries(L.areaByDept).sort((a, b) => b[1] - a[1]).map(([d, a]) => [DEPT_NAME[d], a, d]);
+  const maxA = Math.max(...areaRows.map((r) => r[1]), L.core.area || 0, 1);
+  const pieces = L.pieces.filter(([n]) => !CIRC.test(n)).slice(0, 6);
+  const rooms = L.rooms.filter((r) => !r.tipo);
+  const tipo = L.rooms.find((r) => r.tipo);
+  const counts = Object.entries(L.counts).sort((a, b) => b[1] - a[1]);
+  let body = `<p style="margin-top:14px">${uses.map((d) => badge(d)).join('')}</p>`;
+  body += kv([['Nivel de piso terminado (NPT)', `${npt(L.elev)} m`, true], ['Altura de entrepiso', `${L.h.toFixed(2)} m`, true], L.plate.area && ['Superficie de losa', m2(L.plate.area), true], tipo && tipo.finish && ['Acabado de piso', esc(tipo.finish)]]);
+  body += `<h3>Superficie por uso</h3>` + hbars([...areaRows, ['Núcleo (huella)', L.core.area, 'nucleo']], maxA);
+  body += `<p class="small">Piso terminado medido en el modelo. El núcleo incluye muros, escalera y elevadores.</p>`;
+  if (rooms.length) body += `<h3>Espacios</h3><div class="rows">${rooms.map((r) => `<button class="row" type="button" data-room="${esc(r.num)}"><i style="--c:${cvar(r.dept)}"></i><span>${esc(r.name)} <span class="small">${esc(r.num)}</span></span><em>${r.area ? m2(r.area) : ''}</em></button>`).join('')}</div>`;
+  if (pieces.length) body += `<h3>Mobiliario principal</h3><div class="rows">${pieces.map(([n, c]) => `<div class="row static"><i style="--c:var(--line-2)"></i><span>${esc(n)}</span><em>${nf0.format(c)}</em></div>`).join('')}</div><p class="small">Número de objetos en el modelo (una pieza puede estar hecha de varios objetos).</p>`;
+  body += `<h3>Elementos del modelo</h3>` + kv(counts.map(([k, v]) => [CAT_NAME[k] || k, nf0.format(v) + (k === 'luminarias' ? ' <span class="small">(no se muestran)</span>' : ''), true]));
+  if (state.view !== 'plantas') body += `<button class="cta" type="button" data-goto-level="${L.id}">Ver planta de ${esc(L.name.toLowerCase())}</button>`;
+  openDrawer({ icon: esc(L.id), iconFill: cvar(L.dept), title: L.name, sub: `${L.mixed ? 'Uso mixto' : DEPT_NAME[L.dept]} · NPT ${npt(L.elev)} m`, body, key: 'level:' + L.id });
+}
+function openRoom(L, r) {
+  if (r.tipo) return openLevel(L);
+  let body = `<p style="margin-top:14px">${badge(r.dept)}</p>`;
+  body += kv([['Número', esc(r.num), true], ['Superficie', r.area ? m2(r.area) : 'Sin dato en el modelo', true], r.finish && ['Acabado de piso', esc(r.finish)], ['Nivel', `${esc(L.name)} · NPT ${npt(L.elev)} m`], r.numModelo && r.numModelo !== r.num && ['Código en el modelo de Rhino', esc(r.numModelo), true]]);
+  const same = L.rooms.filter((x) => x.dept === r.dept && !x.tipo && x.num !== r.num);
+  if (same.length) body += `<h3>Otros espacios de ${esc(DEPT_NAME[r.dept].toLowerCase())} en este nivel</h3><div class="rows">${same.map((x) => `<button class="row" type="button" data-room="${esc(x.num)}"><i style="--c:${cvar(x.dept)}"></i><span>${esc(x.name)}</span><em>${x.area ? m2(x.area) : esc(x.num)}</em></button>`).join('')}</div>`;
+  if (state.view !== 'plantas') body += `<button class="cta" type="button" data-goto-level="${L.id}">Ver planta de ${esc(L.name.toLowerCase())}</button>`;
+  openDrawer({ icon: esc(r.num.split('-')[0] || L.id), iconFill: cvar(r.dept), title: r.name, sub: `${DEPT_NAME[r.dept]} · ${L.name}`, body, key: 'room:' + r.num + r.name });
+}
+function openDept(d) {
+  const T = model.totals.areaByDept; const tot = ['comercio', 'oficinas', 'vivienda'].reduce((a, k) => a + (T[k] || 0), 0);
+  let body = `<p style="margin-top:14px">${badge(d)}</p>`;
+  if (d === 'nucleo') {
+    const full = Math.max(...model.levels.map((l) => l.core.area || 0));
+    body += `<p>Muros de concreto que concentran la escalera y los elevadores. Corre de planta baja a azotea y en cada losa deja dos huecos: escalera y elevadores.</p>`;
+    body += kv([['Huella del núcleo', m2(full), true], ['Suma en ' + model.levels.length + ' niveles', m2(model.totals.core), true], ['Muros de núcleo en el modelo', nf0.format(model.features.nucleo.objetos), true], ['Altura del núcleo', `${model.height.toFixed(2)} m`, true]]) +
+      `<p class="small" style="margin-top:10px">En las plantas tipo la huella se mide sin los huecos de escalera y elevadores.</p>`;
+  } else {
+    const lv = model.levels.filter((L) => (L.areaByDept[d] || 0) > 0);
+    const max = Math.max(...lv.map((L) => L.areaByDept[d]));
+    body += kv([['Piso terminado', m2(T[d]), true], ['Participación', `${Math.round(100 * T[d] / tot)} % del área con uso`, true], ['Niveles', esc(deptRanges(d)), true], ['Muro cortina de este uso', `${nf0.format(model.curtainWall[d] || 0)} elementos`, true]]);
+    body += `<h3>Por nivel</h3>` + lv.map((L) => `<div class="hbar"><div class="lab"><span>${esc(L.name)}</span><em>${m2(L.areaByDept[d])}</em></div><div class="trk"><div style="--c:${cvar(d)};width:${Math.max(1.5, 100 * L.areaByDept[d] / max)}%"></div></div></div>`).join('');
+    body += `<button class="cta" type="button" data-goto-level="${lv[Math.floor(lv.length / 2)].id}">Ver una planta de ${esc(DEPT_NAME[d].toLowerCase())}</button>`;
+  }
+  highlightDept(d);
+  openDrawer({ icon: '', iconFill: cvar(d), title: DEPT_NAME[d], sub: d === 'nucleo' ? 'Circulación vertical' : 'Uso del edificio', body, key: 'dept:' + d });
+  renderSide();
+}
+function openTable() {
+  const rows = levelsTopDown().map((L) => {
+    const uses = Object.entries(L.areaByDept).map(([d, a]) => `${DEPT_NAME[d]} ${nf1.format(a)}`).join(' · ');
+    return `<tr><td><b>${esc(L.id)}</b></td><td><i style="--c:${cvar(L.dept)}"></i>${esc(L.mixed ? 'Mixto' : DEPT_NAME[L.dept])}</td><td class="num">${npt(L.elev)}</td><td class="num">${L.plate.area ? nf1.format(L.plate.area) : 's/d'}</td><td class="num">${nf1.format(Object.values(L.areaByDept).reduce((a, b) => a + b, 0))}</td><td class="num">${L.rooms.filter((r) => !r.tipo).length}</td></tr>`;
+  }).join('');
+  const body = `<p style="margin-top:14px">Superficies en m². «Losa» es la placa del nivel; «Piso con uso» suma el piso terminado con uso asignado.</p>
+    <div class="tablewrap"><table class="lv"><thead><tr><th>Nivel</th><th>Uso</th><th>NPT</th><th>Losa</th><th>Piso con uso</th><th>Espacios</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  openDrawer({ icon: svg('table', 20), title: 'Tabla por nivel', sub: `${model.levels.length} niveles · de planta baja a azotea`, body, key: 'table' });
+}
+function openFeature(key, fly) {
+  const F = model.features; const it = exteriorItems().find((x) => x.key === key);
+  if (fly && it && it.pos) focusPoint(it.pos);
+  const range = (k) => { const n = groups.nodes[k]; if (!n) return null; const b = new THREE.Box3().setFromObject(n); return `${npt(b.min.y)} a ${npt(b.max.y)} m`; };
+  const mats = (k) => F[k].materiales.map(([n, c]) => `${esc(n)} <span class="small">(${nf0.format(c)})</span>`).join('<br>');
+  let body = '', sub = '';
+  if (key === 'fragmentos') { sub = 'Fachada'; body = `<p style="margin-top:14px">Paneles de vidrio que forman la capa de fragmentos de cristal de la fachada. En el modelo tienen su propia capa.</p>` + kv([['Paneles', nf0.format(F.fragmentos.objetos), true], ['Altura', range('fragmentos'), true], ['Material', mats('fragmentos')]]); }
+  if (key === 'piel') { sub = 'Fachada'; body = `<p style="margin-top:14px">Superficie de vidrio continua que envuelve la torre por fuera de los niveles.</p>` + kv([['Superficies', nf0.format(F.piel.objetos), true], ['Altura', range('piel'), true], ['Material', mats('piel')]]); }
+  if (key === 'diagrid') { sub = 'Estructura'; body = `<p style="margin-top:14px">Estructura perimetral de acero formada por elementos diagonales (categoría de armazón estructural en el modelo).</p>` + kv([['Elementos', nf0.format(F.diagrid.objetos), true], ['Altura', range('diagrid'), true], ['Material', mats('diagrid')]]); }
+  if (key === 'muro_cortina') {
+    sub = 'Fachada por nivel';
+    const cw = model.curtainWall; const tot = Object.values(cw).reduce((a, b) => a + b, 0);
+    body = `<p style="margin-top:14px">Cada nivel tiene su muro cortina, y el tipo cambia según el uso del nivel. Activa «Fachada por uso» para verlo en la torre.</p>` +
+      hbars(['vivienda', 'oficinas', 'comercio'].map((d) => [DEPT_NAME[d], cw[d] || 0, d, nf0.format(cw[d] || 0) + ' elementos']), Math.max(...Object.values(cw))) +
+      kv([['Elementos en total', nf0.format(tot), true]]) + `<button class="cta" type="button" id="facadeCta">${state.facadeUses ? 'Quitar colores de uso' : 'Colorear fachada por uso'}</button>`;
+  }
+  if (key === 'nucleo') return openDept('nucleo');
+  if (key.startsWith('acc:')) {
+    const g = entranceGroups().find((x) => 'acc:' + x.key === key);
+    const pb = model.levels.find((l) => l.id === 'PB');
+    const rel = { Residential: 'GF-05', 'Office / Parking': 'GF-04', Cafe: 'GF-01' }[g.key];
+    const r = pb.rooms.find((x) => x.numModelo === rel);
+    const paneles = g.items.reduce((a, e) => a + e.paneles, 0);
+    body = `<p style="margin-top:14px">${g.items.length > 1 ? `${g.items.length} accesos` : 'Acceso'} en el muro cortina de planta baja. En el modelo, ${paneles} paneles están marcados como acceso.</p>` +
+      kv([['Nivel', `Planta baja · NPT ${npt(pb.elev)} m`], r && ['Espacio relacionado', `${esc(r.name)} <span class="small">${esc(r.num)}</span>`], r && ['Uso', esc(DEPT_NAME[r.dept])]]) +
+      `<button class="cta" type="button" data-goto-level="PB">Ver planta baja</button>`;
+    return openDrawer({ icon: svg('acceso'), title: g.name, sub: 'Planta baja', body, key });
+  }
+  if (key === 'azotea') { const az = model.levels.find((l) => l.id === 'AZ'); return openLevel(az); }
+  if (key === 'plaza') {
+    sub = 'Sitio';
+    const P = model.sitePieces.filter(([n]) => !/estacionamiento|Cargador|Bolardo/i.test(n)).slice(0, 7);
+    body = `<p style="margin-top:14px">Plaza pública al pie de la torre, con mobiliario urbano del modelo.</p><div class="rows">${P.map(([n, c]) => `<div class="row static"><i style="--c:var(--line-2)"></i><span>${esc(n)}</span><em>${nf0.format(c)}</em></div>`).join('')}</div><p class="small">Número de objetos en el modelo.</p>`;
+  }
+  if (key === 'estacionamiento') {
+    sub = 'Sitio'; const st = model.parkingStalls;
+    const ev = model.sitePieces.find(([n]) => /Cargador/.test(n));
+    body = `<p style="margin-top:14px">Estacionamiento en superficie junto a la torre.</p>` + kv([['Cajones', `${st.length} (${esc(st[0])}–${esc(st[st.length - 1])})`, true], ev && ['Cargador para auto eléctrico', `${nf0.format(ev[1])} objetos`, true]]);
+  }
+  if (key === 'contexto') {
+    sub = 'Entorno'; body = `<p style="margin-top:14px">Volúmenes de edificios vecinos, calles, banquetas y plazas que rodean el predio.</p>` + kv([['Elementos', nf0.format(F.contexto.objetos), true]]) + `<button class="cta" type="button" id="ctxCta">${state.ctx.exterior ? 'Ocultar contexto' : 'Mostrar contexto'}</button>`;
+  }
+  openDrawer({ icon: svg(it ? it.icon : 'contexto'), title: it ? it.title : key, sub, body, key });
+}
+$('#drBody').addEventListener('click', (e) => {
+  if (e.target.closest('#facadeCta')) { state.facadeUses = !state.facadeUses; setFacadeUses(state.facadeUses); renderChips(); openFeature('muro_cortina'); }
+  if (e.target.closest('#ctxCta')) { state.ctx.exterior = !state.ctx.exterior; if (groups.nodes.contexto && state.view === 'exterior') groups.nodes.contexto.visible = state.ctx.exterior; renderChips(); openFeature('contexto'); requestRender(); }
+});
+function openAbout() {
+  const o = model.originRhino;
+  const body = `<p style="margin-top:14px">Explorador del modelo <b>${esc(model.source)}</b>, convertido para web. Muestra la envolvente, el sitio, el contexto y el interior de cada nivel.</p>
+    <h3>Cómo se calcularon los datos</h3>
+    <p>Los usos vienen de las etiquetas de espacios del modelo (Comercio, Oficinas, Vivienda, Núcleo). Las superficies se midieron sobre los pisos terminados y las losas de cada nivel. Los niveles de piso (NPT) se miden desde planta baja, que en el modelo de Rhino está a +${o[2].toFixed(2)} m.</p>
+    <h3>Idioma</h3>
+    <p>Los nombres de espacios, mobiliario, materiales y tipos se tradujeron al español. Los códigos de espacio usan PB y AZ en lugar de GF y R; la ficha de cada espacio muestra también su código original en Rhino.</p>
+    <h3>Qué no se muestra</h3>
+    <p>Las luminarias (se cuentan en la ficha de cada nivel), las etiquetas de texto y las líneas de ejes.</p>
+    <h3>Coordenadas</h3>
+    ${kv([['Unidades', 'metros'], ['Origen del visor en Rhino (X, Y, Z)', `${o[0].toFixed(2)}, ${o[1].toFixed(2)}, ${o[2].toFixed(2)}`, true], ['Altura del diagrid', `${model.diagridTop.toFixed(2)} m`, true], ['Niveles', String(model.levels.length), true]])}`;
+  openDrawer({ icon: svg('info', 20), title: 'Acerca del modelo', sub: 'Fuente y método', body, key: 'about' });
+}
+$('#aboutBtn').addEventListener('click', openAbout);
+
+/* ================================================================ selección en 3D */
+const ray = new THREE.Raycaster(); const ndc = new THREE.Vector2();
+let highlighted = null;
+function clearHighlight() {
+  if (highlighted) { highlighted.forEach((m) => { m.material = useMat(m.userData.dept); }); highlighted = null; requestRender(); }
+}
+function highlightDept(d) {
+  clearHighlight();
+  if (state.view !== 'usos') return;
+  const ms = blockMeshes.filter((m) => m.userData.dept === d);
+  const hi = useMat(d).clone(); hi.emissive.setHex(0x2a2a2a); hi.userData.hi = true;
+  ms.forEach((m) => { m.material = hi; });
+  highlighted = ms; requestRender();
+}
+function pickAt(cx, cy) {
+  const r = canvas.getBoundingClientRect();
+  ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  if (state.view === 'usos') { const hit = ray.intersectObjects(blockMeshes, false)[0]; return hit ? { type: 'block', hit } : null; }
+  if (state.view === 'plantas') {
+    const root = groups.levels[state.level]; if (!root || !root.visible) return null;
+    const hits = ray.intersectObject(root, true).filter((h) => h.point.y <= clipPlane.constant + 0.01 && !h.object.userData.poche);
+    const hit = hits[0]; if (!hit) return null;
+    const attr = hit.object.geometry.getAttribute('_feature_id');
+    const fid = attr ? attr.getX(hit.face.a) : -1;
+    const f = root.userData.features[fid];
+    return f ? { type: 'element', f, fid } : null;
+  }
+  return null;
+}
+const pickTip = $('#pickTip'); let pickT = 0;
+function hidePick() { pickTip.hidden = true; }
+canvas.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse' || e.buttons) return;
+  const now = performance.now(); if (now - pickT < 60) return; pickT = now;
+  const p = pickAt(e.clientX, e.clientY);
+  if (!p) { hidePick(); canvas.style.cursor = ''; return; }
+  const r = stage.getBoundingClientRect();
+  pickTip.style.left = (e.clientX - r.left) + 'px'; pickTip.style.top = (e.clientY - r.top) + 'px';
+  if (p.type === 'block') { const L = model.levels.find((l) => l.id === p.hit.object.userData.levelId); pickTip.textContent = `${L.name} · ${DEPT_NAME[p.hit.object.userData.dept]}${p.hit.object.userData.zone ? ' · ' + m2(p.hit.object.userData.zone.area) : ''}`; }
+  else pickTip.textContent = `${CAT_NAME[p.f[0]] || p.f[0]}${p.f[1] ? ' · ' + p.f[1] : ''}`;
+  pickTip.hidden = false; canvas.style.cursor = 'pointer';
+});
+canvas.addEventListener('pointerleave', hidePick);
+let down = null;
+canvas.addEventListener('pointerdown', (e) => { down = [e.clientX, e.clientY]; });
+canvas.addEventListener('pointerup', (e) => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 6) return;
+  const p = pickAt(e.clientX, e.clientY);
+  if (!p) return;
+  if (p.type === 'block') { const L = model.levels.find((l) => l.id === p.hit.object.userData.levelId); openLevel(L); }
+  if (p.type === 'element') {
+    const L = curLevel(); const [cat, piece, parte, oid, typ] = p.f;
+    const body = `<p style="margin-top:14px">${badge(L.mixed ? 'nucleo' : L.dept, L.name)}</p>` + kv([['Categoría', esc(CAT_NAME[cat] || cat)], piece && ['Elemento', esc(piece)], parte && parte !== piece && ['Parte', esc(parte)], oid && ['Identificador en el modelo', esc(oid), true], typ && ['Tipo', esc(typ)], ['Nivel', `${esc(L.name)} · NPT ${npt(L.elev)} m`]]) + `<p class="small" style="margin-top:12px">Toca otro elemento del interior para ver sus datos.</p>`;
+    openDrawer({ icon: esc((CAT_NAME[cat] || '?').slice(0, 2)), title: piece || CAT_NAME[cat] || 'Elemento', sub: `${CAT_NAME[cat] || cat} · ${L.name}`, body, key: 'el:' + p.fid });
+  }
+});
+
+/* ================================================================ escala gráfica (planta) */
+function updateScale() {
+  if ($('#scalebar').hidden) return;
+  const dist = camera.position.distanceTo(controls.target);
+  const pxPerM = stage.clientHeight / (2 * dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
+  const nice = [1, 2, 5, 10, 20, 50].find((m) => m * pxPerM >= 70) || 50;
+  $('#scaleBar').style.width = Math.round(nice * pxPerM) + 'px';
+  $('#scaleLbl').textContent = nice + ' m';
+}
+
+/* ================================================================ ciclo de render */
+function frame() {
+  requestAnimationFrame(frame);
+  const moved = controls.update();
+  if (moved) needsRender = true;
+  if (!needsRender) return;
+  needsRender = false;
+  renderer.render(scene, camera);
+  placeHotspots(); updateScale();
+}
+
+/* ================================================================ ruta (hash) */
+let hashLock = false;
+function setHash(h) { hashLock = true; if (location.hash !== '#' + h) history.replaceState(null, '', '#' + h); hashLock = false; }
+function routeFromHash() {
+  const h = location.hash.slice(1);
+  if (h.startsWith('plantas-')) { const id = h.slice(8).toUpperCase(); return ['plantas', model.levels.some((l) => l.id === id) ? id : 'N05']; }
+  if (h === 'usos' || h === 'plantas' || h === 'exterior') return [h, null];
+  return ['exterior', null];
+}
+window.addEventListener('hashchange', () => { if (hashLock || !model) return; const [v, l] = routeFromHash(); setView(v, { level: l }); });
+document.querySelectorAll('.views button').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
+
+/* ================================================================ arranque */
+(async function boot() {
+  try {
+    const res = await fetch('data/model.json'); model = await res.json();
+    readUseColors();
+    progress.total = 3 + 1 + 1;
+    const pShell = loadShell();
+    const pPB = loadLevel('PB'), pAZ = loadLevel('AZ');
+    await pShell;
+    buildUses();
+    const [view, level] = routeFromHash();
+    camera.position.set(110, 70, 160); controls.target.set(0, 26, 0); controls.update();
+    setView(view, { level, instant: true, keepDrawer: true });
+    await Promise.all([pPB, pAZ]);
+    if (state.view === 'exterior') { groups.levels.PB.visible = true; groups.levels.AZ.visible = true; }
+    sun.shadow.needsUpdate = true; requestRender();
+    $('#loading').hidden = true;
+  } catch (err) {
+    console.error(err);
+    $('#loadingMsg').textContent = 'No se pudo cargar el modelo. Recarga la página para intentarlo de nuevo.';
+  }
+  frame();
+})();
+</script>
+</body>
+</html>
